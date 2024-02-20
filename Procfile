@@ -1,0 +1,1 @@
+web: gunicorn google-scrapper:app --log-file - 
