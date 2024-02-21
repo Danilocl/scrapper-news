@@ -11,7 +11,7 @@ app = Flask(__name__)
 def index():
     return "Welcome to the News Scraper API!"
 
-@app.route('/scrape_news')
+@app.route('/news')
 def scrape_news():
     chrome_driver_path = 'C:/chromedriver.exe'
     service = Service(chrome_driver_path)
