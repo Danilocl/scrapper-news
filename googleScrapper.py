@@ -62,6 +62,10 @@ def get_news():
         return jsonify(news)
     else:
         return jsonify({"error": "Failed to fetch news articles."}), 500
+    
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "ok"})    
 
 if __name__ == '__main__':
     app.run(debug=True)
