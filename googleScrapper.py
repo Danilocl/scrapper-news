@@ -2,18 +2,23 @@ from flask import Flask, jsonify
 import requests
 from bs4 import BeautifulSoup
 import re
+import unicodedata
 
-app = Flask(__name__)
+app = Flask(__name__) 
 
-def format_title(title):    
-    formatted_title = re.sub(r'\s+', ' ', title) 
+def clean_source(source):
+    normalized_source = unicodedata.normalize('NFKD', source).encode('ASCII', 'ignore').decode('utf-8')
+    cleaned_source = normalized_source.lower().replace(".com", "").replace("mais", "").strip()
+    return cleaned_source
+
+
+def format_title(title):
+    normalized_title = unicodedata.normalize('NFKD', title).encode('ASCII', 'ignore').decode('utf-8')
+    formatted_title = re.sub(r'\s+', ' ', normalized_title)
     formatted_title = re.sub(r'[^\w\s]', '', formatted_title) 
-    return formatted_title.strip() 
+    return formatted_title.strip()
 
-def clean_source(source):    
-    sourceL = source.lower()
-    source = sourceL.replace(".com", "").replace("mais", "").strip()
-    return source
+
 
 def scrape_news():
     url = 'https://news.google.com/rss?hl=pt-BR&gl=BR&ceid=BR:pt-419'
