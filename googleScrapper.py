@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -11,20 +11,22 @@ def clean_source(source):
     cleaned_source = normalized_source.lower().replace(".com", "").replace("mais", "").strip()
     return cleaned_source
 
-
 def format_title(title):
     normalized_title = unicodedata.normalize('NFKD', title).encode('ASCII', 'ignore').decode('utf-8')
     formatted_title = re.sub(r'\s+', ' ', normalized_title)
     formatted_title = re.sub(r'[^\w\s]', '', formatted_title) 
     return formatted_title.strip()
 
-
-
 def scrape_news():
     url = 'https://news.google.com/rss?hl=pt-BR&gl=BR&ceid=BR:pt-419'
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
 
     try:
+        # Obtém o URL base do RapidAPI, se disponível
+        gateway_url = request.headers.get('X-RapidAPI-Proxy-Base')
+        if gateway_url:
+            url = f"{gateway_url}/rss?hl=pt-BR&gl=BR&ceid=BR:pt-419"
+
         response = requests.get(url, headers=headers)
         response.raise_for_status()  # Raise an exception for HTTP errors
         xml_content = response.content
@@ -51,10 +53,6 @@ def scrape_news():
         print(f"Error accessing the page: {str(e)}")
         return []
 
-@app.route('/')
-def index():
-    return "Welcome to the News Scraper API!"
-
 @app.route('/news')
 def get_news():
     news = scrape_news()
@@ -62,7 +60,7 @@ def get_news():
         return jsonify(news)
     else:
         return jsonify({"error": "Failed to fetch news articles."}), 500
-    
+
 @app.route('/health')
 def health_check():
     return jsonify({"status": "ok"})    
